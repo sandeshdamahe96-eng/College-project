@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            margin: 20px;
+        }
+        h1 {
+            margin-top: 0;
+            color: #1c1e21;
+        }
+        p {
+            color: #606770;
+            margin-bottom: 24px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dddfe2;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #qrcode {
+            margin-top: 24px;
+            padding: 16px;
+            border: 1px solid #dddfe2;
+            border-radius: 8px;
+            display: inline-block;
+            min-height: 128px; /* Placeholder height */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>QR Code Generator</h1>
+        <p>Enter the full URL of your site to generate a QR code.</p>
+        
+        <input type="text" id="url-input" placeholder="e.g., http://192.168.1.10/my-app">
+        
+        <button id="generate-btn">Generate QR Code</button>
+        
+        <div id="qrcode"></div>
+    </div>
+
+    <!-- This script provides the QR Code generation functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        const urlInput = document.getElementById('url-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const qrcodeContainer = document.getElementById('qrcode');
+        let qrCodeInstance = null; // To hold the QR code object
+
+        generateBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+
+            if (url === "") {
+                alert("Please enter a URL!");
+                return;
+            }
+
+            // Clear the previous QR code before generating a new one
+            qrcodeContainer.innerHTML = '';
+
+            // Create a new QR code
+            try {
+                qrCodeInstance = new QRCode(qrcodeContainer, {
+                    text: url,
+                    width: 200,
+                    height: 200,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            } catch (error) {
+                alert("Could not generate QR code. Please check the URL.");
+                console.error(error);
+            }
+        });
+    </script>
+
+</body>
+</html>

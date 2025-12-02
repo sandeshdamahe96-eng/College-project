@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Model with Blinking Eyes</title>
+    <style>
+        body { margin: 0; background: #222; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.155.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        let scene, camera, renderer, eyeMesh;
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        camera.position.z = 3;
+
+        const loader = new THREE.GLTFLoader();
+        loader.load('spongilis.glb', function(gltf) {
+            scene.add(gltf.scene);
+            // Replace 'NameOfEyeMesh' with the actual mesh name for your model's eye
+            eyeMesh = gltf.scene.getObjectByName('NameOfEyeMesh');
+            animate();
+        });
+
+        function blink() {
+            if (!eyeMesh || !eyeMesh.morphTargetDictionary) return;
+
+            // Find morph target indices for eye blinking, e.g. "eyeBlinkLeft" and "eyeBlinkRight"
+            const leftIndex = eyeMesh.morphTargetDictionary["eyeBlinkLeft"];
+            const rightIndex = eyeMesh.morphTargetDictionary["eyeBlinkRight"];
+
+            // Close eyes
+            eyeMesh.morphTargetInfluences[leftIndex] = 1;
+            eyeMesh.morphTargetInfluences[rightIndex] = 1;
+
+            // Open eyes after short delay
+            setTimeout(() => {
+                eyeMesh.morphTargetInfluences[leftIndex] = 0;
+                eyeMesh.morphTargetInfluences[rightIndex] = 0;
+            }, 200);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // Automatic blinking every 1–5 seconds for realism
+        setInterval(() => {
+            blink();
+        }, Math.random() * 4000 + 1000);
+    </script>
+</body>
+</html>

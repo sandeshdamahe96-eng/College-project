@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oscarella 3D Viewer</title>
+    <!-- You will need to create this CSS file or copy from your original project -->
+    <link rel="stylesheet" href="Oscarella.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Add a pointer cursor to indicate the model is interactive */
+        model-viewer {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-container">
+        <header class="header">
+            <a href="list page.html" class="back-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12L15.41 7.41Z" fill="white"/>
+                </svg>
+            </a>
+            <h1 class="title">Oscarella</h1>
+        </header>
+
+        <main class="model-container">
+            <model-viewer 
+                id="interactive-model"
+                src="./images/models/oscarella.glb"
+                ar
+                camera-controls
+                auto-rotate
+                shadow-intensity="1.5"
+                alt="A 3D model of Oscarella. Click to hear description."
+                camera-orbit="90deg 75deg 105%">
+            </model-viewer>
+        </main>
+        <audio id="background-audio" loop>
+            <source src="./audio/oscarella info.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+
+        <div class="audio-controls">
+            <button class="control-btn" id="btn-start">Start</button>
+            <button class="control-btn" id="btn-stop">Stop</button>
+            <button class="control-btn" id="btn-reset">Reset</button>
+        </div>
+
+    </div>
+
+    <!-- 3D Model Viewer Script -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    
+    <!-- Text-to-Speech Script -->
+    <script>
+        const modelViewer = document.getElementById('interactive-model');
+        let isSpeaking = false;
+
+        // When the user clicks the model, fetch the info and speak it.
+        modelViewer.addEventListener('click', () => {
+            // Prevent starting a new speech if one is already in progress
+            if (isSpeaking) {
+                return;
+            }
+            
+            const titleElement = document.querySelector('.title');
+            if (!titleElement) {
+                console.error("Title element not found!");
+                return;
+            }
+            const modelName = titleElement.textContent.trim().toLowerCase();
+            const apiUrl = `./api.php?model=${modelName}`;
+            console.log(`Fetching info for: ${modelName}`);
+
+            // Fetch the model's information from the PHP backend
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success' && result.data.description) {
+                        speakText(result.data.description);
+                    } else {
+                        console.error('API Error:', result.message || 'Failed to get description.');
+                    }
+                })
+                .catch(error => {
+                    console.error('There was a problem fetching the information:', error);
+                });
+        });
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Cancel any previous speech
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // --- ANIMATION CONTROL ---
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    // Play the 'talk' animation when speech starts
+                    // The animation is set to loop
+                    modelViewer.animationName = 'talk';
+                    modelViewer.play({ repetitions: Infinity });
+                    console.log("Speech started, playing 'talk' animation.");
+                };
+
+                utterance.onend = () => {
+                    isSpeaking = false;
+                    // Stop the 'talk' animation when speech ends
+                    modelViewer.animationName = 'talk';
+                    modelViewer.pause();
+                    console.log("Speech ended, pausing 'talk' animation.");
+                };
+                
+                utterance.onerror = (event) => {
+                    console.error('SpeechSynthesisUtterance.onerror', event);
+                    isSpeaking = false; // Reset status on error
+                };
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.error("Sorry, your browser does not support text-to-speech.");
+            }
+        }
+
+        // --- BLINKING ANIMATION ---
+        // This makes the model feel more alive by blinking randomly
+        function playBlinkAnimation() {
+            // Check if a 'blink' animation exists in the model
+            if (modelViewer.availableAnimations.includes('blink')) {
+                modelViewer.animationName = 'blink';
+                modelViewer.play({ repetitions: 1 });
+            }
+        }
+
+        // Set an interval to trigger the blink animation at random times
+        setInterval(() => {
+            if (!isSpeaking) { // Don't blink while talking for a more natural look
+                playBlinkAnimation();
+            }
+        }, 4000 + Math.random() * 4000); // Blink every 4-8 seconds
+
+         // --- NEW: Audio Control Logic ---
+        const bgAudio = document.getElementById('background-audio');
+        const startBtn = document.getElementById('btn-start');
+        const stopBtn = document.getElementById('btn-stop');
+        const resetBtn = document.getElementById('btn-reset');
+
+        // Play Audio
+        startBtn.addEventListener('click', () => {
+            bgAudio.play().catch(error => {
+                console.log("Audio play failed (user interaction usually required first):", error);
+            });
+        });
+
+        // Stop (Pause) Audio
+        stopBtn.addEventListener('click', () => {
+            bgAudio.pause();
+        });
+
+        // Reset Audio (Pause and set time to 0)
+        resetBtn.addEventListener('click', () => {
+            bgAudio.pause();
+            bgAudio.currentTime = 0;
+        });
+    </script>
+</body>
+</html>
+

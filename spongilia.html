@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spongilia 3D Viewer</title>
+    <!-- Assumes spongilia.css exists -->
+    <link rel="stylesheet" href="spongilia.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        model-viewer { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="page-container">
+        <header class="header">
+            <a href="list page.html" class="back-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12L15.41 7.41Z" fill="white"/>
+                </svg>
+            </a>
+            <h1 class="title">Spongilia</h1>
+        </header>
+
+        <main class="model-container">
+            <model-viewer 
+                id="interactive-model"
+                src="./images/models/spongilia.glb"
+                ar
+                camera-controls
+                auto-rotate
+                shadow-intensity="1.5"
+                alt="A 3D model of Spongilia. Click to hear description."
+                camera-orbit="90deg 75deg 105%">
+            </model-viewer>
+        </main>
+        <audio id="background-audio" loop>
+            <source src="./audio/spongilia info.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+
+        <div class="audio-controls">
+            <button class="control-btn" id="btn-start">Start</button>
+            <button class="control-btn" id="btn-stop">Stop</button>
+            <button class="control-btn" id="btn-reset">Reset</button>
+        </div>
+
+    </div>
+
+    <!-- 3D Model Viewer Script -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    
+    <!-- Text-to-Speech Script -->
+    <script>
+        const modelViewer = document.getElementById('interactive-model');
+        let isSpeaking = false;
+
+        modelViewer.addEventListener('click', () => {
+            if (isSpeaking) { return; }
+            
+            const titleElement = document.querySelector('.title');
+            if (!titleElement) { console.error("Title element not found!"); return; }
+            const modelName = titleElement.textContent.trim().toLowerCase();
+            const apiUrl = `./api.php?model=${modelName}`;
+            console.log(`Fetching info for: ${modelName}`);
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success' && result.data.description) {
+                        speakText(result.data.description);
+                    } else {
+                        console.error('API Error:', result.message || 'Failed to get description.');
+                    }
+                })
+                .catch(error => console.error('There was a problem fetching the information:', error));
+        });
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    modelViewer.animationName = 'talk';
+                    modelViewer.play({ repetitions: Infinity });
+                    console.log("Speech started, playing 'talk' animation.");
+                };
+
+                utterance.onend = () => {
+                    isSpeaking = false;
+                    modelViewer.animationName = 'talk';
+                    modelViewer.pause();
+                    console.log("Speech ended, pausing 'talk' animation.");
+                };
+                
+                utterance.onerror = (event) => {
+                    console.error('SpeechSynthesisUtterance.onerror', event);
+                    isSpeaking = false;
+                };
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.error("Sorry, your browser does not support text-to-speech.");
+            }
+        }
+
+        function playBlinkAnimation() {
+            if (modelViewer.availableAnimations.includes('blink')) {
+                modelViewer.animationName = 'blink';
+                modelViewer.play({ repetitions: 1 });
+            }
+        }
+
+        setInterval(() => {
+            if (!isSpeaking) {
+                playBlinkAnimation();
+            }
+        }, 4000 + Math.random() * 4000);
+         // --- NEW: Audio Control Logic ---
+        const bgAudio = document.getElementById('background-audio');
+        const startBtn = document.getElementById('btn-start');
+        const stopBtn = document.getElementById('btn-stop');
+        const resetBtn = document.getElementById('btn-reset');
+
+        // Play Audio
+        startBtn.addEventListener('click', () => {
+            bgAudio.play().catch(error => {
+                console.log("Audio play failed (user interaction usually required first):", error);
+            });
+        });
+
+        // Stop (Pause) Audio
+        stopBtn.addEventListener('click', () => {
+            bgAudio.pause();
+        });
+
+        // Reset Audio (Pause and set time to 0)
+        resetBtn.addEventListener('click', () => {
+            bgAudio.pause();
+            bgAudio.currentTime = 0;
+        });
+    </script>
+</body>
+</html>
+

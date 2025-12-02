@@ -1,0 +1,105 @@
+/* --- Basic Setup & Body --- */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Poppins', sans-serif;
+    overflow: hidden; /* Prevents unwanted scrollbars */
+}
+
+/* --- Background and Layout --- */
+.background-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* REMEMBER TO UPDATE THIS PATH TO YOUR BACKGROUND IMAGE */
+    background: url("./images/background.png") no-repeat center center/cover;
+    background-attachment: fixed; /* Keep background fixed if scrolling is later enabled */
+    
+    position: relative;
+    text-align: center;
+}
+
+/* Dark, blurred overlay to match the image's mood */
+.background-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 20, 40, 0.6); /* Dark blue overlay */
+    backdrop-filter: blur(4px); /* This blurs the background image */
+    z-index: 1; /* Ensure overlay is below content but above background */
+}
+
+/* --- Content Wrapper --- */
+.content-wrapper {
+    position: relative; /* Ensures content is above the overlay */
+    z-index: 2; /* Ensures content is above the overlay */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem; /* Space between the button and the text block */
+    padding: 20px;
+}
+
+/* --- Enter Button Styling --- */
+.enter-button {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%; /* Makes it a circle */
+    
+    /* Glass Effect */
+    background: rgba(255, 255, 255, 0.1); /* Semi-transparent white background */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border */
+    backdrop-filter: blur(10px); /* The key to the frosted glass effect */
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
+    
+    /* Text Styling */
+    color: #ffffff; /* White text color */
+    font-size: 1.6rem; /* Adjust font size */
+    font-weight: 600; /* Bold text */
+    text-decoration: none; /* Important if it's an <a> tag */
+
+    /* Centering the "Enter" text within the circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* Interactive effects */
+    cursor: pointer; /* Changes cursor to a pointer on hover */
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.enter-button:hover {
+    background: rgba(255, 255, 255, 0.18); /* Slightly less transparent on hover */
+    transform: scale(1.05); /* Grow slightly on hover */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); /* Add a subtle glow on hover */
+}
+
+
+/* --- Credits Text Styling --- */
+.credits {
+    color: #00e5ff; /* Bright cyan for the glowing effect */
+    text-align: center; /* Ensure text is centered within its container */
+}
+
+.credits p {
+    margin: 0.5rem 0; /* Spacing between lines of text */
+    /* Neon glow effect using text-shadow */
+    text-shadow: 0 0 7px #00e5ff, 0 0 10px #00e5ff;
+}
+
+.line-1 {
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.line-2, .line-3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
